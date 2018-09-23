@@ -17,4 +17,3 @@ minke_whale.n.01 :  0.25
 tortoise.n.01 :  0.07692307692307693
 novel.n.01 :  0.043478260869565216
 
-Process finished with exit code 0
