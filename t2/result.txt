@@ -1,0 +1,20 @@
+q1:
+141576
+6403
+['[', 'Sense', 'and', 'Sensibility', 'by', 'Jane', 'Austen', '1811', ']']
+
+q2:
+[(',', 3899), ('.', 3736), ('the', 2988), ('and', 1905), ('to', 1517), ('a', 1383), ('of', 1202), ('he', 1068), ('``', 1045), ("''", 1044)]
+Hobbies :
+ring: 11 activities: 11 love: 8 sports: 12 church: 3
+Romance :
+ring: 2 activities: 1 love: 36 sports: 3 church: 29
+
+q3:
+dictionary lexicon
+bilingual_dictionary desk_dictionary collegiate_dictionary etymological_dictionary gazetteer learner's_dictionary school_dictionary pocket_dictionary little_dictionary spell-checker spelling_checker unabridged_dictionary unabridged
+minke_whale.n.01 :  0.25
+tortoise.n.01 :  0.07692307692307693
+novel.n.01 :  0.043478260869565216
+
+Process finished with exit code 0

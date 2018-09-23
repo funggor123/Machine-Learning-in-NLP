@@ -17,7 +17,7 @@ sents = gutenberg.sents('austen-sense.txt')
 # load the words from corpus romance
 romance_words = brown.words(categories='romance')
 # import the data from corpus hobbies and romance
-news_and_romance_words = brown.words(categories=['hobbies', 'romance'])
+hobbies_words = brown.words(categories='hobbies')
 
 
 def q1():
@@ -47,8 +47,14 @@ def q2():
     # 2.  Print the word frequency of the following words:['ring','activities','love','sports','church'] 
     # in the 'romance'  and 'hobbies' categories respectively. 
     # Your Code
-    fdist = nltk.FreqDist(w.lower() for w in news_and_romance_words)
+    fdist = nltk.FreqDist(w.lower() for w in hobbies_words )
     models = ['ring', 'activities', 'love', 'sports', 'church']
+    print("Hobbies : ")
+    for m in models:
+        print(m + ':', fdist[m], end=' ')
+    print()
+    print("Romance : ")
+    fdist = nltk.FreqDist(w.lower() for w in romance_words)
     for m in models:
         print(m + ':', fdist[m], end=' ')
     print()
@@ -59,7 +65,9 @@ def q3():
     # 1. Print all synonymous words (lemmas) of the word 'dictionary'
     # Your Code
     #  Synset: a set of synonyms that share a common meaning.
-    print(wn.synsets('dictionary')[0].lemma_names())
+    for w in wn.synsets('dictionary')[0].lemma_names():
+        print(w, end=" ")
+    print()
 
     # 2. Print all hyponyms of the word 'dictionary'
     # Your Code
