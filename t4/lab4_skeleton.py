@@ -2,7 +2,6 @@
 # student_id: "12219691"
 import numpy as np
 from scipy import sparse
-from collections import Counter
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 import nltk
 from nltk.corpus import stopwords
@@ -10,6 +9,8 @@ import string
 import pandas as pd
 import re
 
+nltk.download('punkt')
+nltk.download('stopwords')
 stop_words = set(stopwords.words('english') + list(string.punctuation))
 
 def tokenize(text):
@@ -115,6 +116,7 @@ def train_NB(data_label, data_matrix):
     # Normalized
     for column in range(K):
         P_xy[:, column] = normalize(P_xy[:, column])
+    P_y = P_y / N
     return P_y, P_xy
 
 
@@ -139,6 +141,8 @@ def predict_NB(data_matrix, P_y, P_xy):
     # Compute Log(P( Y))
     for col in range(K):
         scores[:, col] += np.log(P_y[col])
+
+    # low score for exp
     # get labels for every document by choosing the maximum probability
     # YOUR CODE HERE
     data_pre = np.argmax(scores, axis=1) + 1
@@ -153,6 +157,8 @@ def evaluate(y_true, y_pre):
 
 
 if __name__ == '__main__':
+
+
     train_id_list, train_data_label, train_data_matrix, vocab = read_data("data/train.csv")
     print("Vocabulary Size:", len(vocab))
     print("Training Set Size:", len(train_id_list))
@@ -171,9 +177,7 @@ if __name__ == '__main__':
     sub_df["pred"] = test_data_pre
     sub_df.to_csv("submission.csv", index=False)
 
-    grt_label = pd.read_csv("data/answer.csv")
-    acc, precision, recall, f1 = evaluate(grt_label["label"], test_data_pre)
-    print("Evalution: Accuracy: %f\tPrecision: %f\tRecall: %f\tMacro-F1: %f" % (acc, precision, recall, f1))
+
 
 # End of line comment
 # C1H2E2N1G 9C6H9I 1F9U9N9G
