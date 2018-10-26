@@ -5,6 +5,10 @@ from nltk.corpus import gutenberg
 from nltk.corpus import brown
 from nltk.corpus import wordnet as wn
 
+nltk.download('gutenberg')
+nltk.download('brown')
+nltk.download('wordnet')
+
 # load the words from corpus gutenberg
 words = gutenberg.words('austen-sense.txt')
 
@@ -69,13 +73,17 @@ def q3():
         print(w, end=" ")
     print()
 
+
     # 2. Print all hyponyms of the word 'dictionary'
     # Your Code
 
     for w in wn.synsets('dictionary')[0].hyponyms():
         for o in w.lemma_names():
             print(o, end=' ')
+            print(wn.synsets(o))
+            # Just a testing
 
+    print(wn.synset('gazetteer.n.02').path_similarity(wn.synset('bilingual_dictionary.n.01')))
     print()
     # 3. Use one of the predefined similarity measures to score the similarity of
     # the following pairs of synsets and rank the pairs in order of decreasing similarity.
