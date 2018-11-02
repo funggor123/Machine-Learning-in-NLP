@@ -7,12 +7,9 @@ import numpy as np
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
 import nltk
 from nltk.corpus import stopwords
-import string
 import pandas as pd
 import re
-import unicodedata
 import tensorflow as tf
-from nltk.stem import WordNetLemmatizer
 from sklearn.feature_extraction.text import CountVectorizer
 from scipy import sparse
 from nltk.stem import WordNetLemmatizer
@@ -21,10 +18,11 @@ from nltk import word_tokenize
 from keras.utils.np_utils import to_categorical
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
-import keras
 from sklearn.model_selection._split import train_test_split
 from keras.wrappers.scikit_learn import KerasClassifier
 from sklearn.model_selection import RandomizedSearchCV
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import GridSearchCV
 
 nltk.download('averaged_perceptron_tagger')
 
@@ -168,7 +166,6 @@ def usekeras(X_train, y_train, X_test, y_test):
     loss, accuracy = model.evaluate(X_test, y_test, verbose=False)
     print("Testing Accuracy:  {:.4f}".format(accuracy))
 
-
 def embb(val):
     def create_model(num_filters, kernel_size, vocab_size, embedding_dim, maxlen):
         model = Sequential()
@@ -199,7 +196,7 @@ def embb(val):
 
     X_train = tokenizer.texts_to_sequences(x_train)
     X_test = tokenizer.texts_to_sequences(x_test)
-    #    val = tokenizer.texts_to_sequences(val)
+    #  val = tokenizer.texts_to_sequences(val)
 
     y_train = to_categorical(y_train)
     y_test = to_categorical(y_test)
@@ -269,7 +266,7 @@ def tokenize(text):
 
     text = re.sub(regex, " ", text, 0)
 
-    #text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore')
+    # text = unicodedata.normalize('NFKD', text).encode('ascii', 'ignore')
 
     tokens = []
     for word in nltk.word_tokenize(text):
@@ -277,15 +274,15 @@ def tokenize(text):
         if word not in stop_words and not word.isnumeric():
             tokens.append(word)
 
-    # Only Need Noun Tag
-    #refiltered = nltk.pos_tag(tokens)
-    #filtered = [w for w, pos in refiltered if pos.startswith('NN')]
+    # Lemma
+    lemma = [wnl.lemmatize(word) for word in tokens]
+
 
     # Stemming
-    stem_words = [porter_stemmer.stem(word) for word in tokens]
+    stem_words = [porter_stemmer.stem(word) for word in lemma]
+
 
     return stem_words
-
 
 def get_bagofwords(data, vocab_dict):
     '''
@@ -305,18 +302,16 @@ def get_bagofwords(data, vocab_dict):
         index += 1
     return data_matrix
 
-
 def read_data(file_name, vocab=None):
     """
     https://pandas.pydata.org/pandas-docs/stable/generated/pandas.read_csv.html
     """
     df = pd.read_csv(file_name)
-    vectorizer = CountVectorizer(tokenizer=lambda text: tokenize(text), vocabulary=vocab, min_df=0.05, max_df=0.95
+    vectorizer = CountVectorizer(tokenizer=lambda text: tokenize(text), vocabulary=vocab, min_df=0.01, max_df=0.99,
                                  )
     X = vectorizer.fit_transform(df['text'])
     print(len(vectorizer.vocabulary_))
     return df['id'], df['label'], X.toarray(), vectorizer.vocabulary_
-
 
 # return the best model after training
 def train_NB(data_label, data_matrix):
@@ -564,28 +559,44 @@ def evaluate(y_true, y_pre):
 
 
 if __name__ == '__main__':
-    # config = tf.ConfigProto(device_count={'GPU': 1, 'CPU': 1})
-    # sess = tf.Session(config=config)
+    config = tf.ConfigProto(device_count={'GPU': 1, 'CPU': 1})
+    sess = tf.Session(config=config)
 
     train_id_list, train_data_label, train_data_matrix, vocab = read_data("data/train.csv", None)
     print("Training Set Size:", len(train_id_list))
     print(vocab)
     test_id_list, _, test_data_matrix, _ = read_data("data/test.csv", vocab)
-    print("Test Set Size:", len(test_id_list))
+    #print("Test Set Size:", len(test_id_list))
 
-    best_model_params = train_NB(train_data_label, train_data_matrix)
+    #best_model_params = train_NB(train_data_label, train_data_matrix)
 
-    train_data_pre = predict_NB(train_data_matrix, best_model_params)
+    #train_data_pre = predict_NB(train_data_matrix, best_model_params)
 
-    acc, precision, recall, f1 = evaluate(train_data_label, train_data_pre)
+    #acc, precision, recall, f1 = evaluate(train_data_label, train_data_pre)
+    #print("Evalution: Accuracy: %f\tPrecision: %f\tRecall: %f\tMacro-F1: %f" % (acc, precision, recall, f1))
+
+    #test_data_pre = predict_NB(test_data_matrix,best_model_params)
+    clf = GridSearchCV(cv=None,
+                 estimator=LogisticRegression(C=1.0, intercept_scaling=1,
+                                              dual=False, fit_intercept=True, penalty='l2', tol=0.0001, max_iter=500, solver='saga', multi_class='multinomial' ,verbose=True),
+                 param_grid={'C': [0.001, 0.01, 0.1, 1, 10, 100, 1000],
+
+                             })
+    clf.fit(train_data_matrix[0:8000], train_data_label[0:8000])
+
+    Z = clf.predict_proba(train_data_matrix[8000:16000])
+    train_data_pre = np.argmax(Z, axis=1)+1
+
+    acc, precision, recall, f1 = evaluate(train_data_label[8000:16000], train_data_pre)
     print("Evalution: Accuracy: %f\tPrecision: %f\tRecall: %f\tMacro-F1: %f" % (acc, precision, recall, f1))
 
-    # test_data_pre = predict_NB(test_data_matrix,best_model_params)
+    #Z = logreg.predict_proba(train_data_matrix[8000:16000])
+    #valid_data_pre = np.argmax(Z, axis=1) + 1
 
-    # sub_df = pd.DataFrame()
-    # sub_df["id"] = test_id_list
-    # sub_df["pred"] = test_data_pre
-    # sub_df.to_csv("submission.csv", index=False)
+    #ub_df = pd.DataFrame()
+    #sub_df["id"] = test_id_list
+    #sub_df["pred"] = valid_data_pre
+    #sub_df.to_csv("submission.csv", index=False)
 
 # End of line comment
 # C1H2E2N1G 9C6H9I 1F9U9N9G
